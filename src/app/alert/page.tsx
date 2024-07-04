@@ -1,10 +1,10 @@
 import React from 'react'
-import Accordion from '../components/Accordion'
+import Alert from '../components/Alert'
 
 export default function page() {
   return (
     <>
-    <Accordion />
+    <Alert />
     </>
   )
 }
