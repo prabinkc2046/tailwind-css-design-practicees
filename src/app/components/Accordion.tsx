@@ -1,67 +1,89 @@
 "use client"
-import React, { useEffect, useRef, useState } from 'react'
-import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-type AccordionItem = {
+
+import { useEffect, useRef, useState } from "react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faChevronDown } from "@fortawesome/free-solid-svg-icons"
+type AccordionItemType = {
+    id: number;
+    title: string;
+    body: React.JSX.Element;
+} | {
     id: number;
     title: string;
     body: string;
 }
 
-const accordionItems: AccordionItem [] = [
-    {id: 1, title:'title 1', body:'body 1'},
-    {id: 2, title:'title 2', body:'Lorem ipsum dolor sit amet consectetur adipisicing elit. Architecto molestias doloribus sed corrupti impedit nesciunt consequuntur, accusantium odit labore itaque error repellendus necessitatibus doloremque dolorum eaque! Sequi minima, quae ducimus a adipisci dolores facilis, tempore perspiciatis optio consequuntur ex velit rem maxime ratione dolorum vitae modi quidem recusandae eaque. Fugit.'},
-    {id: 3, title: 'title 3', body:'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusantium impedit similique magni ullam aliquam delectus iure, repellendus atque neque id accusamus dignissimos ex nemo eveniet earum placeat asperiores sunt autem modi praesentium nihil repellat alias in nostrum. Amet impedit blanditiis autem aspernatur fugit in illum quis, eveniet veritatis sequi, consequuntur asperiores. Sequi, voluptas libero, sed est aspernatur iusto repellat facilis ducimus earum labore iste reiciendis qui fuga quidem tempora cumque molestias cum quas? Delectus blanditiis corporis hic dolor sequi ad eveniet amet commodi sed, quasi neque aliquid dolore necessitatibus ratione incidunt! Non nam, nobis reiciendis at veritatis voluptas repudiandae amet?Lorem ipsum dolor sit amet consectetur adipisicing elit. Architecto molestias doloribus sed corrupti impedit nesciunt consequuntur, accusantium odit labore itaque error repellendus necessitatibus doloremque dolorum eaque! Sequi minima, quae ducimus a adipisci dolores facilis, tempore perspiciatis optio consequuntur ex velit rem maxime ratione dolorum vitae modi quidem recusandae eaque. Fugit.'}
-]
-export default function Accordion() {
-    const [activeAccordionItem, setActiveAccordionItem] = useState<number | null>(null)
-    const contentRef = useRef<{[key: number]: HTMLDivElement | null}>({})
-    const handleToggle = (currentAccordionItem: number) => {
-        if(activeAccordionItem !== null && activeAccordionItem === currentAccordionItem){
-            setActiveAccordionItem(null)
-        } else {
-            setActiveAccordionItem(currentAccordionItem)
-        }
+type AccordionProps = {
+    accordionItems: AccordionItemType[]
+}
+export default function Accordion({accordionItems}: AccordionProps) {
+    const [activeHeadingItem, setActiveHeadingItem] = useState<number | null>(1)
+    const [activeBorderItem, setActiveBorderItem] = useState<number | null>(null)
+    const bodyContent = useRef<{[key: number] : HTMLDivElement | null}>({})
+    const ulContent = useRef<HTMLUListElement | null>(null)
+    const handleToggle = (itemId: number) => {   
+        setActiveBorderItem(itemId)
+        setTimeout(() => {
+            if(activeHeadingItem !== null && activeHeadingItem === itemId){
+                setActiveHeadingItem(null)
+            } else {
+                setActiveHeadingItem(itemId)
+            }          
+        }, 200);
+        
     }
 
+
     useEffect(() => {
-        if(activeAccordionItem !== null){
-            const content = contentRef.current[activeAccordionItem]
-            if (content){
-                content.style.maxHeight = `${content.scrollHeight}px`
+     if(activeHeadingItem !== null){
+        const content = bodyContent.current[activeHeadingItem]
+        console.log(content?.scrollHeight)
+        if(content){
+            content.style.maxHeight = `${content.scrollHeight}px`
+        }
+     }
+
+     return () => {
+        if(activeHeadingItem !== null){
+            const content = bodyContent.current[activeHeadingItem]
+            if(content){
+                content.style.maxHeight = '0px'
             }
         }
+     }
+    },[activeHeadingItem])
+
+    
+
+    // detects the click outside of ul and set activeBorderItem to null
+    useEffect(() => {
+        const detectOutsideClick =(e: MouseEvent) => {
+            if(ulContent.current && !ulContent.current.contains(e.target as Node)){
+                setActiveBorderItem(null)
+            }
+        }
+        
+        document.addEventListener('mousedown', detectOutsideClick)
 
         return () => {
-            if(activeAccordionItem !== null){
-                const content = contentRef.current[activeAccordionItem]
-                if(content){
-                    content.style.maxHeight = '0px'
-                }
-            }
+            document.removeEventListener('mousedown', detectOutsideClick)
         }
-    },[activeAccordionItem])
+    },[])
 
-  return (
-    <ul className='w-5/5 mx-5 mt-2 border rounded-lg divide-y'>
-        {accordionItems.map(item => {
-            return(
-                <li key={item.id} >
-                    <div onClick={() => handleToggle(item.id)}
-                    className={`flex flex-row justify-between items-center p-5  ${item.id === activeAccordionItem && item.id === 1 ? 'rounded-t-lg' : 'rounded-non'} ${item.id === activeAccordionItem ? 'border-xl border-blue-200 bg-blue-300' : 'border-5 border-blue-700 bg-white'}`}
-                    >
-                        {item.title} 
-                        <FontAwesomeIcon icon={faChevronDown} className={`${item.id === activeAccordionItem ? 'rotate-180' : 'rotate-0'}`}/>
-                    </div>
-                    <div ref={el => {contentRef.current[item.id] = el}} 
-                    className={`overflow-hidden transition-max-height duration-500 ease-in-out`} 
-                    style={{maxHeight: item.id === activeAccordionItem ? `${contentRef.current[item.id]?.scrollHeight}px` : '0px'}}
-                    >
-                        <div className='p-5 text-justify'>{item.body}</div>
-                    </div>
-                </li>
-            )
-        })}
+   return(
+    <ul ref={ulContent} className={` border mx-20`}>
+        
+
+        {accordionItems.map(item => (
+        <li key={item.id}>
+            {/* accordion heading container */}
+            <div onClick={() => handleToggle(item.id)} className={` flex flex-row justify-between items-center p-2 ${item.id === activeBorderItem ? 'border-4 border-blue-700 ' : 'border'} ${item.id === activeHeadingItem ? 'bg-blue-300' : 'bg-white'} ${activeBorderItem === 1 ? 'rounded-t-[10px]' : 'rounded-none'}`}>{item.title} <FontAwesomeIcon size='sm' className={`h-5  ${item.id === activeHeadingItem ? 'rotate-270' : 'rotate-90'}`} icon={faChevronDown}/></div>
+            <div  ref={el => {bodyContent.current[item.id] = el}} className="overflow-hidden transition-max-height duration-500 ease-in-out " style={{maxHeight: item.id === activeHeadingItem ? `${bodyContent.current[item.id]?.scrollHeight}px` : '0px'}}>
+                <div className={`p-2 text-justify`}>{item.body}</div>
+            </div>
+        </li>
+        ))}
     </ul>
-  )
+   )
 }
+
