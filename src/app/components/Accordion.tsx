@@ -77,7 +77,7 @@ export default function Accordion({accordionItems}: AccordionProps) {
         {accordionItems.map(item => (
         <li key={item.id}>
             {/* accordion heading container */}
-            <div onClick={() => handleToggle(item.id)} className={` flex flex-row justify-between items-center p-2 ${item.id === activeBorderItem ? 'border-4 border-blue-700 ' : 'border'} ${item.id === activeHeadingItem ? 'bg-blue-300' : 'bg-white'} ${activeBorderItem === 1 ? 'rounded-t-[10px]' : 'rounded-none'}`}>{item.title} <FontAwesomeIcon size='sm' className={`h-5  ${item.id === activeHeadingItem ? 'rotate-270' : 'rotate-90'}`} icon={faChevronDown}/></div>
+            <div onClick={() => handleToggle(item.id)} className={` flex flex-row justify-between items-center p-2 ${item.id === activeBorderItem ? 'border-4 border-blue-700 ' : 'border'} ${item.id === activeHeadingItem ? 'bg-blue-300' : 'bg-white'} ${activeBorderItem === 1 ? 'rounded-t-[10px]' : 'rounded-none'}`}>{item.title} <FontAwesomeIcon size='sm' className={`h-5 transition-rotate duration-500 ${item.id === activeHeadingItem ? 'rotate-270' : 'rotate-90'}`} icon={faChevronDown}/></div>
             <div  ref={el => {bodyContent.current[item.id] = el}} className="overflow-hidden transition-max-height duration-500 ease-in-out " style={{maxHeight: item.id === activeHeadingItem ? `${bodyContent.current[item.id]?.scrollHeight}px` : '0px'}}>
                 <div className={`p-2 text-justify`}>{item.body}</div>
             </div>
